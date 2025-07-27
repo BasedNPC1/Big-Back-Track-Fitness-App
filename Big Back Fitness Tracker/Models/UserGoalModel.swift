@@ -2,7 +2,8 @@ import Foundation
 import SwiftUI
 
 // Model to store user's personal information and goals
-struct UserGoal {
+struct UserGoal: Codable {
+    var username: String = "" // User's name for personalization
     var height: Double // in cm
     var weight: Double // in kg
     var age: Int
@@ -17,7 +18,7 @@ struct UserGoal {
     var dailyCarbs: Double = 0 // in grams
     var dailyFat: Double = 0 // in grams
     
-    enum Gender: String, CaseIterable, Identifiable {
+    enum Gender: String, CaseIterable, Identifiable, Codable {
         case male = "Male"
         case female = "Female"
         case other = "Other"
@@ -32,10 +33,38 @@ class UserGoalViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private let openAIService = OpenAIService()
+    private let userDefaultsKey = "userGoal"
     
     init() {
-        // Initialize with nil, will be set when user creates a goal
-        userGoal = nil
+        // Load existing goal from UserDefaults if available
+        loadUserGoal()
+    }
+    
+    func loadUserGoal() {
+        // Attempt to load user goal from UserDefaults
+        if let savedData = UserDefaults.standard.data(forKey: userDefaultsKey) {
+            do {
+                let decoder = JSONDecoder()
+                let savedGoal = try decoder.decode(UserGoal.self, from: savedData)
+                self.userGoal = savedGoal
+            } catch {
+                print("Error loading user goal: \(error)")
+                // If loading fails, userGoal remains nil
+            }
+        }
+    }
+    
+    func saveUserGoal() {
+        // Save current user goal to UserDefaults
+        if let goal = userGoal {
+            do {
+                let encoder = JSONEncoder()
+                let data = try encoder.encode(goal)
+                UserDefaults.standard.set(data, forKey: userDefaultsKey)
+            } catch {
+                print("Error saving user goal: \(error)")
+            }
+        }
     }
     
     func calculateGoals(height: Double, weight: Double, age: Int, gender: UserGoal.Gender, 
@@ -90,6 +119,9 @@ class UserGoalViewModel: ObservableObject {
                         dailyCarbs: nutritionData.macros.carbs,
                         dailyFat: nutritionData.macros.fat
                     )
+                    
+                    // Save the goal to UserDefaults for persistence
+                    self?.saveUserGoal()
                     
                 case .failure(let error):
                     self?.errorMessage = "Failed to calculate goals: \(error.localizedDescription)"

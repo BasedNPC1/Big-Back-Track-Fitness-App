@@ -79,7 +79,7 @@ class FoodLogViewModel: ObservableObject {
         errorMessage = nil
         
         // Check if we're using a placeholder API key
-        if EnvironmentConfig.openAIApiKey == "your_api_key_here" {
+        if EnvironmentConfig.openAIApiKey == "YOUR_OPENAI_API_KEY_HERE" {
             // Use mock data if API key is not set
             createMockFoodEntry(name: name, weight: weight, unit: unit)
             isLoading = false
@@ -172,5 +172,22 @@ class FoodLogViewModel: ObservableObject {
     
     func removeEntry(at indexSet: IndexSet) {
         foodEntries.remove(atOffsets: indexSet)
+    }
+    
+    // Fetch food entries from persistent storage
+    func fetchFoodEntries() {
+        // In a real app, this would load from a database or UserDefaults
+        // For now, we'll just ensure we have the latest entries
+        // This method can be expanded later to load from persistent storage
+        
+        // If using UserDefaults in the future, implementation would be:
+        // if let savedData = UserDefaults.standard.data(forKey: "foodEntries") {
+        //     do {
+        //         let decoder = JSONDecoder()
+        //         self.foodEntries = try decoder.decode([FoodLogEntry].self, from: savedData)
+        //     } catch {
+        //         print("Error loading food entries: \(error)")
+        //     }
+        // }
     }
 }

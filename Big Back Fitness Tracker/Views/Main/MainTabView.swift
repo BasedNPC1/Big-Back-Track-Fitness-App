@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct MainTabView: View {
+    // Create shared view models that will be passed to all tabs
+    @StateObject private var sharedFoodLogViewModel = FoodLogViewModel()
+    @StateObject private var sharedUserGoalViewModel = UserGoalViewModel()
+    
     // Colors for the vibrant theme (matching LoginView)
     let darkBackground = Color.black
     let gradientStart = Color(red: 0.0, green: 0.8, blue: 0.8) // Teal
@@ -11,40 +15,22 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             // Dashboard Tab
-            VStack {
-                Text("DASHBOARD")
-                    .font(.system(size: 28, weight: .heavy))
-                    .foregroundColor(.white)
-                
-                Text("Your nutrition stats will appear here")
-                    .foregroundColor(.gray)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(darkBackground)
+            DashboardView(foodLogViewModel: sharedFoodLogViewModel, userGoalViewModel: sharedUserGoalViewModel)
             .tabItem {
                 Label("Dashboard", systemImage: "chart.bar.fill")
             }
             
             // Food Logging Tab
-            FoodLogView()
+            FoodLogView(viewModel: sharedFoodLogViewModel)
                 .tabItem {
                     Label("Log Food", systemImage: "fork.knife")
                 }
             
             // Progress Tab
-            VStack {
-                Text("PROGRESS")
-                    .font(.system(size: 28, weight: .heavy))
-                    .foregroundColor(.white)
-                
-                Text("View your gains over time")
-                    .foregroundColor(.gray)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(darkBackground)
-            .tabItem {
-                Label("Progress", systemImage: "chart.xyaxis.line")
-            }
+            ProgressView(foodLogViewModel: sharedFoodLogViewModel)
+                .tabItem {
+                    Label("Progress", systemImage: "chart.xyaxis.line")
+                }
             
             // Profile Tab
             VStack {
@@ -52,7 +38,7 @@ struct MainTabView: View {
                     .font(.system(size: 28, weight: .heavy))
                     .foregroundColor(.white)
                 
-                Text("Your settings and goals")
+                Text("View your profile")
                     .foregroundColor(.gray)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -60,6 +46,12 @@ struct MainTabView: View {
             .tabItem {
                 Label("Profile", systemImage: "person.fill")
             }
+            
+            // Camera Tab
+            CameraView(viewModel: sharedFoodLogViewModel)
+                .tabItem {
+                    Label("Camera", systemImage: "camera.fill")
+                }
         }
         .accentColor(accentColor)
         .preferredColorScheme(.dark)

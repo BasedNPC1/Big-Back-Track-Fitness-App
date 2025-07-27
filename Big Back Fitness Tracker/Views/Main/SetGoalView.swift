@@ -3,6 +3,7 @@ import SwiftUI
 struct SetGoalView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var viewModel = UserGoalViewModel()
+    @ObservedObject var foodLogViewModel: FoodLogViewModel
     
     // User inputs
     @State private var height: Double = 170.0
@@ -354,7 +355,7 @@ struct SetGoalView: View {
             Button(action: calculateGoals) {
                 if viewModel.isLoading {
                     HStack {
-                        ProgressView()
+                        SwiftUI.ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         Text("Calculating...")
                             .fontWeight(.semibold)
@@ -625,8 +626,6 @@ struct SetGoalView: View {
     }
 } 
 
-struct SetGoalView_Previews: PreviewProvider {
-    static var previews: some View {
-        SetGoalView()
-    }
+#Preview {
+    SetGoalView(foodLogViewModel: FoodLogViewModel())
 }

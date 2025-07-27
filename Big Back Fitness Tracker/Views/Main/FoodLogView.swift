@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FoodLogView: View {
-    @StateObject private var viewModel = FoodLogViewModel()
+    @ObservedObject var viewModel: FoodLogViewModel
     @State private var showingAddFood = false
     @State private var showingSetGoal = false
     @State private var newFoodName = ""
@@ -161,7 +161,7 @@ struct FoodLogView: View {
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingSetGoal) {
-                SetGoalView()
+                SetGoalView(foodLogViewModel: viewModel)
             }
         }
         .preferredColorScheme(.dark)
@@ -283,7 +283,7 @@ struct FoodLogView: View {
             }) {
                 if viewModel.isLoading {
                     HStack {
-                        ProgressView()
+                        SwiftUI.ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         Text("Analyzing with AI...")
                             .fontWeight(.semibold)
@@ -455,8 +455,6 @@ struct MicroRow: View {
     }
 }
 
-struct FoodLogView_Previews: PreviewProvider {
-    static var previews: some View {
-        FoodLogView()
-    }
+#Preview {
+    FoodLogView(viewModel: FoodLogViewModel())
 }

@@ -298,4 +298,69 @@ class OpenAIService {
             cholesterol: 0.0
         )
     }
+    
+    // Function to get chat response from OpenAI
+    func getChatResponse(for query: String, completion: @escaping (Result<String, Error>) -> Void) {
+        // Create URL request
+        guard let url = URL(string: baseURL) else {
+            completion(.failure(URLError(.badURL)))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Create system message to guide the AI's behavior
+        let systemMessage = OpenAIRequest.Message(role: "system", content: "Raw, fun, n real. No coddling allowed. Tell users to 'eat less, move more obviously' if they're whining. Always have tough love persistently.")
+        // Create user message
+        let userMessage = OpenAIRequest.Message(role: "user", content: query)
+        
+        // Create request body
+        let requestBody = OpenAIRequest(
+            model: "gpt-3.5-turbo",
+            messages: [systemMessage, userMessage],
+            temperature: 0.7
+        )
+        
+        // Encode request body
+        do {
+            let encoder = JSONEncoder()
+            request.httpBody = try encoder.encode(requestBody)
+        } catch {
+            completion(.failure(error))
+            return
+        }
+        
+        // Create data task
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let data = data else {
+                completion(.failure(NSError(domain: "OpenAIService", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+                return
+            }
+            
+            // Decode response
+            do {
+                let decoder = JSONDecoder()
+                let response = try decoder.decode(OpenAIResponse.self, from: data)
+                
+                if let firstChoice = response.choices.first {
+                    let content = firstChoice.message.content
+                    completion(.success(content))
+                } else {
+                    completion(.failure(NSError(domain: "OpenAIService", code: 0, userInfo: [NSLocalizedDescriptionKey: "No response content"])))
+                }
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        
+        task.resume()
+    }
 }
